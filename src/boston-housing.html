@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>tfjs: Boston Housing Price</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@2.0.0/dist/tf.min.js"></script>
+</head>
+<body>
+  <h1>Tensorflow.js: Boston Housing Price</h1>
+  <script>
+    async function run() {
+      console.log("DOM fully loaded.");
+      const csvUrl = 'data/boston-housing-train.csv';
+      const trainingData = tf.data.csv(
+        csvUrl, {
+        columnConfigs: {
+          indus: {
+            isLabel: true
+          }
+        }
+      });
+
+      numOfFeatures = (await trainingData.columnNames()).length - 1;
+      console.log("trainingData", trainingData);
+      console.log("numOfFeature", numOfFeatures);
+
+      // Prepare trainingData
+      // Convert xs(features) and ys(labels)
+      const convertedTrainingData = trainingData.map(({xs, ys}) => {
+        return { xs: Object.values(xs), ys: Object.values(ys) }
+      }).batch(10);
+
+      console.log("convertedTrainingData:", convertedTrainingData);
+
+      // Define model
+      const model = tf.sequential();
+      model.add(tf.layers.dense({
+        inputShape: [numOfFeatures],
+        units: 1
+      }));
+      model.compile({
+        optimizer: tf.train.sgd(0.000001),
+        loss: 'meanSquaredError'
+      });
+
+      // Fit the model using the prepared training dataset
+      await model.fitDataset(convertedTrainingData, {
+        epochs: 10,
+        callbacks: {
+          onEpochEnd: async (epoch, logs) => {
+            console.log(epoch + ':' + logs.loss);
+          }
+        }
+      });
+
+
+    }
+
+    window.addEventListener("DOMContentLoaded", run());
+  </script>
+  
+</body>
+</html>

@@ -3,7 +3,7 @@
 console.log("Hello TensorFlow.js: Iris classifier");
 console.log(tf.version);
 
-(async function run() {
+async function run() {
   const csvUrl = 'data/iris.csv';
   const trainingData = tf.data.csv(csvUrl, {
     columnConfigs: {
@@ -24,10 +24,14 @@ console.log(tf.version);
     return { xs:Object.values(xs), ys: Object.values(labels)};
   }).batch(10);
 
+  console.log(convertedData);
+
+  const numOfFeatures = (await trainingData.columnNames()).length - 1;
+  const numOfSamples = 150;
+
   const model = tf.sequential();
   model.add(tf.layers.dense({
-    // inputShape: [numOfFeatures],
-    inputShape: [4],
+    inputShape: [numOfFeatures],
     activation: "sigmoid", 
     units: 5
   }));
@@ -55,4 +59,6 @@ console.log(tf.version);
   const testVal = tf.tensor2d([5.8, 2.7, 5.1, 1.9], [1, 4]);
   const prediction = model.predict(testVal);
   alert(prediction);
-})();
+}
+
+run();
